@@ -3,7 +3,7 @@
 
 create table if not exists public.events (
   id          bigint generated always as identity primary key,
-  person      text not null check (person in ('Patrizia', 'Annalisa')),
+  person      text not null check (person in ('P', 'A')),
   phrase      text not null,
   day         date not null,                          -- giorno locale (Europe/Rome) in cui è stata detta
   created_at  timestamptz not null default now(),

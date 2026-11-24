@@ -97,7 +97,7 @@
         </div>
         <div class="stats" id="stats"></div>
         <div id="chart"></div>
-        <div class="legend"><span><i style="background:#2f5d62"></i>Patrizia</span><span><i style="background:#d08a3c"></i>Annalisa</span></div>
+        <div class="legend"><span><i style="background:#2f5d62"></i>P</span><span><i style="background:#d08a3c"></i>A</span></div>
       </div>
       <div class="card"><h2>Frasi nel periodo</h2><div id="byPhrase"></div></div>
       <div class="card"><h2>Giorno per giorno</h2><div id="byDay"></div></div>
@@ -117,21 +117,21 @@
 <script>
 (function () {
   var DATA = {
-    Patrizia: [
+    P: [
       { id: "perdono", label: "perdono" },
       { id: "cristosanto", label: "cristo santo" },
       { id: "grazie", label: "grazie per avermi risposto" },
       { id: "giorgiomio", label: "giorgio mio" },
       { id: "sbagliato", label: "ho sbagliato", note: "in una conversazione con Giorgio" }
     ],
-    Annalisa: [
+    A: [
       { id: "porcudiu", label: "porcu diu" },
       { id: "insulti", label: "insulti vari", note: "dopo aver chiuso gentilmente il telefono" },
       { id: "antonio", label: "Antonio sta ammalato" },
       { id: "dichimi", label: "dichimi" }
     ]
   };
-  var COLORS = { Patrizia: "#2f5d62", Annalisa: "#d08a3c" };
+  var COLORS = { P: "#2f5d62", A: "#d08a3c" };
   var PEOPLE = Object.keys(DATA);
   var HISTORY_DAYS = 90;
 
@@ -247,9 +247,9 @@
       '<div class="stat"><b>' + (best ? byDayTot[best] : 0) + "</b><span>" + (best ? "record: " + fmtShort(best) : "nessun record") + "</span></div>";
 
     var W = 360, H = 190, L = 24, B = 20, T = 8, R = 14;
-    var per = {}; days.forEach(function (d) { per[d] = { Patrizia: 0, Annalisa: 0 }; });
+    var per = {}; days.forEach(function (d) { per[d] = { P: 0, A: 0 }; });
     list.forEach(function (e) { if (per[e.d] && per[e.d][e.p] !== undefined) per[e.d][e.p]++; });
-    var max = 1; days.forEach(function (d) { max = Math.max(max, per[d].Patrizia + per[d].Annalisa); });
+    var max = 1; days.forEach(function (d) { max = Math.max(max, per[d].P + per[d].A); });
     var step = Math.max(1, Math.ceil(max / 4)); var top = step * Math.ceil(max / step);
     var cw = (W - L - R) / days.length, bw = Math.max(2, cw * 0.7);
     var y = function (v) { return T + (H - T - B) * (1 - v / top); };
@@ -282,9 +282,9 @@
     });
     $("byPhrase").innerHTML = h;
 
-    var rows = days.slice().reverse().filter(function (d) { return per[d].Patrizia + per[d].Annalisa > 0; });
-    $("byDay").innerHTML = rows.length ? '<table><tr><th>Giorno</th><th class="num">Patrizia</th><th class="num">Annalisa</th><th class="num">Totale</th></tr>' + rows.map(function (d) {
-      return "<tr><td>" + new Date(d + "T12:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" }) + '</td><td class="num">' + per[d].Patrizia + '</td><td class="num">' + per[d].Annalisa + '</td><td class="num"><b>' + (per[d].Patrizia + per[d].Annalisa) + "</b></td></tr>";
+    var rows = days.slice().reverse().filter(function (d) { return per[d].P + per[d].A > 0; });
+    $("byDay").innerHTML = rows.length ? '<table><tr><th>Giorno</th><th class="num">P</th><th class="num">A</th><th class="num">Totale</th></tr>' + rows.map(function (d) {
+      return "<tr><td>" + new Date(d + "T12:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" }) + '</td><td class="num">' + per[d].P + '</td><td class="num">' + per[d].A + '</td><td class="num"><b>' + (per[d].P + per[d].A) + "</b></td></tr>";
     }).join("") + "</table>" : '<div class="muted">Nessun dato nel periodo.</div>';
   }
 

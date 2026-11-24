@@ -1,6 +1,6 @@
 # Contatore frasi
 
-Sito con login per contare le frasi di Patrizia e Annalisa.
+Sito con login per contare le frasi di P e A.
 I conteggi di "Oggi" ripartono da zero a mezzanotte, ma ogni inserimento resta salvato su Supabase.
 Nella scheda "Report" ci sono grafico e storico.
 
