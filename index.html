@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Contatore">
+<meta name="theme-color" content="#2f5d62">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%232f5d62'/%3E%3Ctext x='90' y='120' font-size='96' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='700'%3E%2B1%3C/text%3E%3C/svg%3E">
+<title>Contatore frasi</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:#f6f5f1; color:#1f2328; padding:16px; }
+  .wrap { max-width:720px; margin:0 auto; }
+  h1 { font-size:1.3rem; margin:0; }
+  .head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; }
+  .today { color:#6b7280; font-size:.9rem; }
+  .tabs { display:flex; gap:6px; margin-bottom:14px; }
+  .tabs button { flex:1; padding:10px; }
+  .tabs button.on { background:#1f2328; color:#fff; border-color:#1f2328; }
+  .card { background:#fff; border:1px solid #e3e1da; border-radius:12px; padding:14px; margin-bottom:14px; }
+  .card h2 { margin:0 0 6px; font-size:1.1rem; display:flex; justify-content:space-between; }
+  .card h2 span { font-size:.85rem; font-weight:400; color:#6b7280; }
+  .row { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid #e3e1da; }
+  .lbl { flex:1; font-size:.95rem; }
+  .lbl small { display:block; color:#6b7280; }
+  .n { min-width:2em; text-align:center; font-size:1.5rem; font-weight:600; font-variant-numeric:tabular-nums; }
+  button { font:inherit; border:1px solid #cfcdc4; background:#fff; border-radius:10px; cursor:pointer; touch-action:manipulation; color:inherit; }
+  .b { width:48px; height:48px; font-size:1.5rem; line-height:1; padding:0; }
+  .plus { background:#2f5d62; border-color:#2f5d62; color:#fff; }
+  .minus { color:#b4533a; }
+  .tools { display:flex; flex-wrap:wrap; gap:8px; }
+  .tools button { padding:10px 14px; }
+  .danger { color:#b4533a; }
+  textarea { width:100%; height:140px; margin-top:8px; font:.8rem ui-monospace, monospace; }
+  table { width:100%; border-collapse:collapse; font-size:.88rem; }
+  th, td { padding:6px 4px; border-top:1px solid #e3e1da; text-align:left; }
+  th { color:#6b7280; font-weight:500; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .muted { color:#6b7280; font-size:.85rem; }
+  .seg { display:flex; gap:6px; margin:4px 0 10px; }
+  .seg button { padding:6px 10px; font-size:.85rem; }
+  .seg button.on { background:#2f5d62; color:#fff; border-color:#2f5d62; }
+  .legend { display:flex; gap:14px; font-size:.85rem; margin-top:6px; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; }
+  .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px; }
+  .stat { background:#f6f5f1; border-radius:8px; padding:8px; }
+  .stat b { display:block; font-size:1.3rem; }
+  .stat span { font-size:.78rem; color:#6b7280; }
+  svg text { font-family: system-ui, sans-serif; }
+  [hidden] { display:none !important; }
+  .login { max-width:360px; margin:40px auto; }
+  .login input { width:100%; font:inherit; padding:12px; border:1px solid #cfcdc4; border-radius:10px; margin-top:8px; background:#fff; }
+  .login button { width:100%; padding:12px; margin-top:12px; background:#2f5d62; color:#fff; border-color:#2f5d62; }
+  .err { color:#b4533a; font-size:.88rem; margin-top:8px; min-height:1.2em; }
+  .who { font-size:.8rem; color:#6b7280; display:flex; gap:10px; align-items:center; justify-content:flex-end; margin-bottom:8px; }
+  .who button { padding:4px 10px; font-size:.8rem; }
+  .status { font-size:.8rem; color:#b4533a; text-align:right; min-height:1em; }
+  button:disabled { opacity:.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="v-login" class="login" hidden>
+    <h1>Contatore frasi</h1>
+    <p class="muted">Accedi con l'account che ti è stato dato.</p>
+    <form id="loginForm">
+      <input type="email" id="email" placeholder="Email" autocomplete="username" required>
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" required>
+      <button type="submit" id="loginBtn">Entra</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+  </section>
+
+  <section id="v-app" hidden>
+    <div class="who"><span id="whoami"></span><button type="button" data-act="logout">Esci</button></div>
+    <div class="head"><h1>Contatore frasi</h1><span class="today" id="today"></span></div>
+    <div class="status" id="status"></div>
+    <div class="tabs">
+      <button type="button" data-act="tab" data-v="oggi" class="on">Oggi</button>
+      <button type="button" data-act="tab" data-v="report">Report</button>
+    </div>
+
+    <section id="v-oggi">
+      <div id="people"></div>
+      <div class="card"><h2>Ultimi eventi di oggi</h2><div id="log"></div></div>
+    </section>
+
+    <section id="v-report" hidden>
+      <div class="card">
+        <h2>Andamento</h2>
+        <div class="seg" id="range">
+          <button type="button" data-act="range" data-v="7">7 giorni</button>
+          <button type="button" data-act="range" data-v="30" class="on">30 giorni</button>
+          <button type="button" data-act="range" data-v="90">90 giorni</button>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div id="chart"></div>
+        <div class="legend"><span><i style="background:#2f5d62"></i>Patrizia</span><span><i style="background:#d08a3c"></i>Annalisa</span></div>
+      </div>
+      <div class="card"><h2>Frasi nel periodo</h2><div id="byPhrase"></div></div>
+      <div class="card"><h2>Giorno per giorno</h2><div id="byDay"></div></div>
+      <div class="tools"><button type="button" data-act="csv">Copia dati CSV</button><span id="csvMsg" class="muted"></span></div>
+      <textarea id="csvOut" hidden readonly></textarea>
+    </section>
+  </section>
+
+  <section id="v-config" class="login" hidden>
+    <h1>Configurazione mancante</h1>
+    <p class="muted">Inserisci URL e chiave del progetto Supabase nel file <code>config.js</code>.</p>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  var DATA = {
+    Patrizia: [
+      { id: "perdono", label: "perdono" },
+      { id: "cristosanto", label: "cristo santo" },
+      { id: "grazie", label: "grazie per avermi risposto" },
+      { id: "giorgiomio", label: "giorgio mio" },
+      { id: "sbagliato", label: "ho sbagliato", note: "in una conversazione con Giorgio" }
+    ],
+    Annalisa: [
+      { id: "porcudiu", label: "porcu diu" },
+      { id: "insulti", label: "insulti vari", note: "dopo aver chiuso gentilmente il telefono" },
+      { id: "antonio", label: "Antonio sta ammalato" },
+      { id: "dichimi", label: "dichimi" }
+    ]
+  };
+  var COLORS = { Patrizia: "#2f5d62", Annalisa: "#d08a3c" };
+  var PEOPLE = Object.keys(DATA);
+  var HISTORY_DAYS = 90;
+
+  // Eventi in memoria: {id, p, f, d, t, by}. I dati veri stanno su Supabase.
+  var events = [];
+  var range = 30;
+  var sb = null, channel = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  function show(view) { ["v-login", "v-app", "v-config"].forEach(function (v) { $(v).hidden = v !== view; }); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function dayKey(date) { return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()); }
+  function today() { return dayKey(new Date()); }
+  function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function label(f) {
+    for (var p in DATA) for (var i = 0; i < DATA[p].length; i++) if (DATA[p][i].id === f) return DATA[p][i].label;
+    return f;
+  }
+  function todays() { var d = today(); return events.filter(function (e) { return e.d === d; }); }
+  function count(list, p, f) { return list.filter(function (e) { return e.p === p && (!f || e.f === f); }).length; }
+  function status(t) { $("status").textContent = t || ""; }
+  function fromRow(r) { return { id: r.id, p: r.person, f: r.phrase, d: r.day, t: new Date(r.created_at).getTime(), by: r.created_by_email }; }
+  function upsertLocal(e) {
+    for (var i = 0; i < events.length; i++) if (events[i].id === e.id) return;
+    events.push(e); events.sort(function (a, b) { return a.t - b.t; });
+  }
+  function removeLocal(id) { events = events.filter(function (e) { return e.id !== id; }); }
+
+  // ---------- Dati dal server ----------
+  async function loadAll() {
+    var start = new Date(); start.setDate(start.getDate() - (HISTORY_DAYS - 1));
+    var all = [], from = 0, size = 1000;
+    while (true) {
+      var res = await sb.from("events").select("*").gte("day", dayKey(start))
+        .order("created_at", { ascending: true }).range(from, from + size - 1);
+      if (res.error) throw res.error;
+      all = all.concat(res.data);
+      if (res.data.length < size) break;
+      from += size;
+    }
+    events = all.map(fromRow);
+  }
+
+  function subscribe() {
+    if (channel) sb.removeChannel(channel);
+    channel = sb.channel("events-live")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "events" }, function (msg) { upsertLocal(fromRow(msg.new)); render(); })
+      .on("postgres_changes", { event: "DELETE", schema: "public", table: "events" }, function (msg) { if (msg.old && msg.old.id != null) { removeLocal(msg.old.id); render(); } })
+      .subscribe();
+  }
+
+  async function addEvent(p, f) {
+    status("");
+    var res = await sb.from("events").insert({ person: p, phrase: f, day: today() }).select().single();
+    if (res.error) { status("Non salvato: " + res.error.message); return; }
+    upsertLocal(fromRow(res.data)); render();
+  }
+
+  async function removeLastToday(p, f) {
+    status("");
+    var d = today(), target = null;
+    for (var i = events.length - 1; i >= 0; i--) {
+      var e = events[i];
+      if (e.d === d && (!p || (e.p === p && e.f === f))) { target = e; break; }
+    }
+    if (!target) return;
+    var res = await sb.from("events").delete().eq("id", target.id);
+    if (res.error) { status("Non tolto: " + res.error.message); return; }
+    removeLocal(target.id); render();
+  }
+
+  // ---------- Vista "Oggi" ----------
+  function renderToday() {
+    var list = todays();
+    $("today").textContent = new Date().toLocaleDateString("it-IT", { weekday: "long", day: "numeric", month: "long" });
+    var h = "";
+    PEOPLE.forEach(function (p) {
+      h += '<div class="card"><h2>' + p + "<span>oggi " + count(list, p) + "</span></h2>";
+      DATA[p].forEach(function (ph) {
+        h += '<div class="row"><div class="lbl">“' + esc(ph.label) + "”" + (ph.note ? "<small>" + esc(ph.note) + "</small>" : "") + "</div>" +
+          '<button type="button" class="b minus" data-act="sub" data-p="' + p + '" data-f="' + ph.id + '" aria-label="meno">−</button>' +
+          '<div class="n">' + count(list, p, ph.id) + "</div>" +
+          '<button type="button" class="b plus" data-act="add" data-p="' + p + '" data-f="' + ph.id + '" aria-label="più">+</button></div>';
+      });
+      h += "</div>";
+    });
+    $("people").innerHTML = h;
+
+    var last = list.slice(-10).reverse();
+    $("log").innerHTML = last.length ? "<table>" + last.map(function (e) {
+      return "<tr><td>" + new Date(e.t).toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" }) + "</td><td>" + e.p + "</td><td>“" + esc(label(e.f)) + '”</td><td class="muted">' + esc((e.by || "").split("@")[0]) + "</td></tr>";
+    }).join("") + "</table>" : '<div class="muted">Nessun evento oggi.</div>';
+  }
+
+  // ---------- Vista "Report" ----------
+  function lastDays(n) {
+    var out = [], d = new Date(); d.setHours(12, 0, 0, 0);
+    for (var i = n - 1; i >= 0; i--) { var x = new Date(d); x.setDate(d.getDate() - i); out.push(dayKey(x)); }
+    return out;
+  }
+  function fmtShort(d) { var p = d.split("-"); return +p[2] + "/" + +p[1]; }
+
+  function renderReport() {
+    var days = lastDays(range);
+    var inRange = {}; days.forEach(function (d) { inRange[d] = true; });
+    var list = events.filter(function (e) { return inRange[e.d]; });
+
+    var byDayTot = {}; list.forEach(function (e) { byDayTot[e.d] = (byDayTot[e.d] || 0) + 1; });
+    var best = null; for (var d in byDayTot) if (!best || byDayTot[d] > byDayTot[best]) best = d;
+    $("stats").innerHTML =
+      '<div class="stat"><b>' + list.length + "</b><span>frasi nel periodo</span></div>" +
+      '<div class="stat"><b>' + (list.length / range).toFixed(1) + "</b><span>media al giorno</span></div>" +
+      '<div class="stat"><b>' + (best ? byDayTot[best] : 0) + "</b><span>" + (best ? "record: " + fmtShort(best) : "nessun record") + "</span></div>";
+
+    var W = 360, H = 190, L = 24, B = 20, T = 8, R = 14;
+    var per = {}; days.forEach(function (d) { per[d] = { Patrizia: 0, Annalisa: 0 }; });
+    list.forEach(function (e) { if (per[e.d] && per[e.d][e.p] !== undefined) per[e.d][e.p]++; });
+    var max = 1; days.forEach(function (d) { max = Math.max(max, per[d].Patrizia + per[d].Annalisa); });
+    var step = Math.max(1, Math.ceil(max / 4)); var top = step * Math.ceil(max / step);
+    var cw = (W - L - R) / days.length, bw = Math.max(2, cw * 0.7);
+    var y = function (v) { return T + (H - T - B) * (1 - v / top); };
+    var svg = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Frasi al giorno">';
+    for (var v = 0; v <= top; v += step) {
+      svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#e3e1da"/>' +
+        '<text x="' + (L - 6) + '" y="' + (y(v) + 4) + '" font-size="11" fill="#6b7280" text-anchor="end">' + v + "</text>";
+    }
+    var lblEvery = days.length <= 7 ? 1 : days.length <= 30 ? 5 : 15;
+    days.forEach(function (d, i) {
+      var x = L + i * cw + (cw - bw) / 2, base = 0;
+      PEOPLE.forEach(function (p) {
+        var c = per[d][p]; if (!c) return;
+        svg += '<rect x="' + x.toFixed(1) + '" y="' + y(base + c).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (y(base) - y(base + c)).toFixed(1) + '" fill="' + COLORS[p] + '" rx="1.5"><title>' + fmtShort(d) + " · " + p + ": " + c + "</title></rect>";
+        base += c;
+      });
+      if ((days.length - 1 - i) % lblEvery === 0) {
+        svg += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 6) + '" font-size="11" fill="#6b7280" text-anchor="middle">' + fmtShort(d) + "</text>";
+      }
+    });
+    $("chart").innerHTML = svg + "</svg>";
+
+    var h = "";
+    PEOPLE.forEach(function (p) {
+      var rows = DATA[p].map(function (ph) { return { ph: ph, n: count(list, p, ph.id) }; });
+      var m = Math.max.apply(null, rows.map(function (r) { return r.n; }).concat([1]));
+      h += '<table><tr><th colspan="2">' + p + '</th><th class="num">' + count(list, p) + "</th></tr>" + rows.map(function (r) {
+        return "<tr><td>" + esc(r.ph.label) + '</td><td style="width:40%"><div style="height:8px;border-radius:4px;background:' + COLORS[p] + ";width:" + (100 * r.n / m) + '%"></div></td><td class="num">' + r.n + "</td></tr>";
+      }).join("") + "</table><br>";
+    });
+    $("byPhrase").innerHTML = h;
+
+    var rows = days.slice().reverse().filter(function (d) { return per[d].Patrizia + per[d].Annalisa > 0; });
+    $("byDay").innerHTML = rows.length ? '<table><tr><th>Giorno</th><th class="num">Patrizia</th><th class="num">Annalisa</th><th class="num">Totale</th></tr>' + rows.map(function (d) {
+      return "<tr><td>" + new Date(d + "T12:00").toLocaleDateString("it-IT", { weekday: "short", day: "numeric", month: "short" }) + '</td><td class="num">' + per[d].Patrizia + '</td><td class="num">' + per[d].Annalisa + '</td><td class="num"><b>' + (per[d].Patrizia + per[d].Annalisa) + "</b></td></tr>";
+    }).join("") + "</table>" : '<div class="muted">Nessun dato nel periodo.</div>';
+  }
+
+  function render() { renderToday(); if (!$("v-report").hidden) renderReport(); }
+
+  // ---------- Click ----------
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest ? ev.target.closest("button[data-act]") : null;
+    if (!b) return;
+    var act = b.getAttribute("data-act"), p = b.getAttribute("data-p"), f = b.getAttribute("data-f");
+    if (act === "add") {
+      b.disabled = true; addEvent(p, f).finally(function () { b.disabled = false; });
+    } else if (act === "sub") {
+      b.disabled = true; removeLastToday(p, f).finally(function () { b.disabled = false; });
+    } else if (act === "tab") {
+      var v = b.getAttribute("data-v");
+      document.querySelectorAll(".tabs button").forEach(function (x) { x.classList.toggle("on", x === b); });
+      $("v-oggi").hidden = v !== "oggi";
+      $("v-report").hidden = v !== "report";
+      render();
+    } else if (act === "range") {
+      range = +b.getAttribute("data-v");
+      document.querySelectorAll("#range button").forEach(function (x) { x.classList.toggle("on", x === b); });
+      renderReport();
+    } else if (act === "csv") {
+      var csv = ["giorno,ora,persona,frase,inserito_da"].concat(events.map(function (e) {
+        return e.d + "," + new Date(e.t).toLocaleTimeString("it-IT") + "," + e.p + ',"' + label(e.f) + '",' + (e.by || "");
+      })).join("\n");
+      var ta = $("csvOut"); ta.hidden = false; ta.value = csv; ta.select();
+      try { navigator.clipboard.writeText(csv).then(function () { $("csvMsg").textContent = "Copiato."; }); } catch (e) {}
+    } else if (act === "logout") {
+      sb.auth.signOut();
+    }
+  });
+
+  // ---------- Login ----------
+  $("loginForm").addEventListener("submit", async function (ev) {
+    ev.preventDefault();
+    $("loginErr").textContent = ""; $("loginBtn").disabled = true;
+    var res = await sb.auth.signInWithPassword({ email: $("email").value.trim(), password: $("password").value });
+    $("loginBtn").disabled = false;
+    if (res.error) $("loginErr").textContent = res.error.message === "Invalid login credentials" ? "Email o password errate." : res.error.message;
+  });
+
+  async function onSession(session) {
+    if (!session) { events = []; if (channel) { sb.removeChannel(channel); channel = null; } show("v-login"); return; }
+    $("whoami").textContent = session.user.email;
+    show("v-app"); render(); status("Caricamento…");
+    try { await loadAll(); status(""); } catch (e) { status("Errore nel caricare i dati: " + (e.message || e)); }
+    subscribe(); render();
+  }
+
+  // ---------- Avvio ----------
+  var cfg = window.CONTATORE_CONFIG || {};
+  if (!window.supabase || !cfg.SUPABASE_URL || cfg.SUPABASE_URL.indexOf("INSERISCI") >= 0) { show("v-config"); return; }
+  sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  var lastUser = undefined;
+  sb.auth.onAuthStateChange(function (_evt, session) {
+    var uid = session ? session.user.id : null;
+    if (uid === lastUser) return;          // ignora i rinnovi del token
+    lastUser = uid;
+    setTimeout(function () { onSession(session); }, 0);
+  });
+
+  // Azzeramento a mezzanotte + ricarica dati quando l'app torna in primo piano
+  var shown = today();
+  function checkDay() { if (today() !== shown) { shown = today(); render(); } }
+  function scheduleMidnight() {
+    var n = new Date(), m = new Date(n); m.setHours(24, 0, 1, 0);
+    setTimeout(function () { checkDay(); scheduleMidnight(); }, m - n);
+  }
+  scheduleMidnight();
+  setInterval(checkDay, 60000);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden || !lastUser) return;
+    checkDay();
+    loadAll().then(render).catch(function () {});
+  });
+})();
+</script>
+</body>
+</html>
